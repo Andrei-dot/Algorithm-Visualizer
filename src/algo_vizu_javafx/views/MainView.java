@@ -12,42 +12,38 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.layout.HBox;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-//TODO : Transition from HBOX to Pane layout
-public class MainView extends HBox  {
+//TODO : Transition from HBOX to Pane layout 
+// FlowPane = funny shit
+public class MainView extends Pane {
 	
 	public int arrayMax  			= 500;
 	public int arraySize 			= 15;
 	public int[] array 				= new int[arraySize];
 	public Random rdm				= new Random();
-
-	public MainView(double spacing) {
-		super(spacing);
-		
-		
+	
+	public MainView() {
 		ObservableList comp 	= this.getChildren();
 		
 		ToggleGroup radioGroup	= new ToggleGroup();	
 		RadioButton bubbleSort	= new RadioButton("Bubble Sort");
-		RadioButton quickSort	= new RadioButton("Quick Sort");
-		RadioButton mergeSort	= new RadioButton("Merge Sort");
 		bubbleSort.setUserData("BubbleSort");
 		bubbleSort.setToggleGroup(radioGroup);
-		mergeSort.setUserData("MergeSort");
-		mergeSort.setToggleGroup(radioGroup);
-		quickSort.setUserData("QuickSort");
-		quickSort.setToggleGroup(radioGroup);		
+		bubbleSort.setTranslateX(850);
 
 		Text str				= new Text("Text");
 		Text output 			= new Text();
 		Font stencil			= new Font("Caladea",24);	
 		str.setFont(stencil);
 		output.setFont(stencil);
+		output.setX(500);
+		output.setY(500);
 		
 		Rectangle[] rects		= new Rectangle[arraySize];
 		for(int i = 0; i < array.length; i++) {
@@ -56,44 +52,58 @@ public class MainView extends HBox  {
 			rects[i] = new Rectangle();
 			rects[i].setWidth(20);
 			rects[i].setHeight(array[i]);
+			rects[i].setUserData(array[i]);
+			rects[i].setX(i*30);
+			rects[i].setY(0);			
 			
 			comp.addAll(rects[i]);
-			
-			System.out.print(array[i] + "-");
+						
 			output.setText(Arrays.toString(array));
 		}
-				
-		DropShadow shadow 		= new DropShadow();
+		
+		for(Rectangle r : rects) {
+			r.setAccessibleText(r.getUserData().toString());
+			r.setOnMouseClicked(new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent e) {
+					System.out.println("[XPOS: " + r.getX() +"]" + "[USERDATA : " + r.getUserData() + "]");
+				}
+			});
+		}
+
 		Button btnStart 		= new Button("Start");
-		Tooltip tp				= new Tooltip("Cliquez pour commencer le tri.");
-		tp.setShowDelay(Duration.millis(1));
-		tp.setHideDelay(Duration.millis(50));
-		btnStart.setTooltip(tp);
-		btnStart.setOnMouseEntered(e -> btnStart.setEffect(shadow));
-		btnStart.setOnMouseExited(e -> btnStart.setEffect(null));
+		btnStart.setTranslateX(600);
 		btnStart.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 				if(radioGroup.getSelectedToggle() != null) {
 					//TODO: Using switch instead of if
+					switch(radioGroup.getSelectedToggle().getUserData().toString()) {
+						case "BubbleSort":
+							
+						default:
+							break;
+					}
 					if(radioGroup.getSelectedToggle().getUserData().toString() == "BubbleSort") {
-						int n = array.length;
-						bubbleSort(array,n);
-						System.out.println("\nBubble Sorted array:");
-						printArray(array,n);
+						int a = array.length;
+						int n = rects.length;
+
+						bubbleSort(array,a);
+						// System.out.println("\nBubble Sorted array:");
+						// printArray(array,n);
 						output.setText(Arrays.toString(array));
 						
-					}
-					if(radioGroup.getSelectedToggle().getUserData().toString() == "MergeSort") {
-						// Swapping sizes, not positions, solution provisoire
-						System.out.println("mergeSort()");
 						boolean swapped = false;
-						int a,j, temp;
-						for(a = 0; a < rects.length - 1; a++) {
-							for(j = 0; j < rects.length - a - 1;j++) {
-								if(rects[j].getHeight() > rects[j+1].getHeight()) {
-									swapRects(rects[j], rects[j+1]);
-									swapped= true;
+						int i,j;
+				        for (i = 0; i < n - 1; i++) {
+				            for (j = 0; j < n - i - 1; j++) {
+								int r1 = ((Integer) rects[j].getUserData()).intValue();
+								int r2 = ((Integer) rects[j+1].getUserData()).intValue();
+			            		
+								if (r1>r2) {
+			            		// if(rects[j].getHeight() > rects[j+1].getHeight()) {
+									swapRectsPos(rects[j], rects[j+1]);
+			            			swapped = true;
 								}
 							}
 							if(swapped==false)
@@ -101,22 +111,29 @@ public class MainView extends HBox  {
 						}
 						output.setText(Arrays.toString(array));
 					}
-					if(radioGroup.getSelectedToggle().getUserData().toString() == "QuickSort") {
-						System.out.println("quickSort()");
-					}
 				} else {
 					str.setText("Option!");
 				}
 			}
 		});
-
-		comp.addAll(str, btnStart, bubbleSort, mergeSort, quickSort, output);
+		
+		comp.addAll(/*str,*/ btnStart, bubbleSort, output);
 	}
 	
-	// TODO : repaint method?
+	
+	// TODO : repaint/animation method
+	//if(rects[j].getX() > rects[j+1].getX()) {
 
-	// For later
-	static void swapRects(Rectangle x, Rectangle y) {
+	static void swapRectsPos(Rectangle x, Rectangle y) {
+		//System.out.println("First rect : " + x.getX() + " Second rect :" + y.getX());
+		
+		// Swapping size, not positions, so not finished
+		int temp = (int) x.getX();
+		x.setX(y.getX());
+		y.setX(temp);
+	}
+	
+	static void swapRectsSize(Rectangle x, Rectangle y) {
 		System.out.println("First rect : " + x.getHeight() + " Second rect :" + y.getHeight());
 		
 		// Swapping size, not positions, so not finished
@@ -125,18 +142,6 @@ public class MainView extends HBox  {
 		y.setHeight(temp);
 	}
 	
-	static void randomizeArray() {
-		
-	}
-	
-    static void quickSort() {
-    	
-    }
-    
-    static void mergeSort() {
-    	
-    }
-
     // NOTE: Just need to swap the rectangles as the values are swapped (rappelle toi de ce que tu as pensé connard)
 	static void bubbleSort(int arr[], int n) {
 		int i, j, temp;

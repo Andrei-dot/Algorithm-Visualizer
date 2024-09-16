@@ -23,19 +23,22 @@ public class main extends Application {
 	//		- associée à une fenetre, on y ajoute des elements enfants (tree,nodes)
 	// new Scene(<root>, w, h);
 	 
-	private final String winTitle		= "Algo Vizualiser";
+	private final String winTitle		= "Algorithm Visualizer";
 	private final int winWidth			= 1280, 
 					  winHeight			= 720;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		try {
-			Scene sc		= new Scene(new MainView(1));
+			Scene sc		= new Scene(new MainView());
+			
 			primaryStage.setScene(sc);
 			primaryStage.setResizable(false);
+			
 			primaryStage.setHeight(winHeight);
 			primaryStage.setWidth(winWidth);
 			primaryStage.setTitle(winTitle);
+			
 			primaryStage.show();
 		} catch(Exception e) {
 			e.printStackTrace();
